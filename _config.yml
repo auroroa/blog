@@ -8,7 +8,7 @@ exclude: ["README.md", "Rakefile", "changelog.md"]
 
 # auto: true
 highlighter: pygments
-paginate: 5
+# paginate: 5
 
 title : 做好现在的事
 tagline : 爱生活，爱技术
