@@ -1,1 +1,22 @@
+# This is the default format.
+# For more see: http://jekyllrb.com/docs/permalinks/
+permalink: /:categories/:year/:month/:day/:title/
+
 baseurl: /blog
+
+exclude: ["README.md", "Rakefile", "changelog.md"]
+
+# auto: true
+highlighter: pygments
+paginate: 5
+
+title : 做好现在的事
+tagline : 爱生活，爱技术
+author :
+  name : auroroa
+  description : JS Developer, Google Fans
+  github : https://github.com/auroroa
+  twitter : http://twitter.com/auroroa
+  email : auroroa@gmail.com
+  simple_search: http://google.com/search
+
