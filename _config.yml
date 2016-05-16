@@ -12,6 +12,14 @@ highlighter: pygments
 
 title : 做好现在的事
 tagline : 爱生活，爱技术
+twitter_username: auroroa
+github_username: auroroa
+email: auroroa@gmail.com
+description: >
+  “以傲慢与偏执回敬傲慢与偏见”
+# Build settings
+markdown: kramdown
+
 author :
   name : auroroa
   description : JS Developer, Google Fans
