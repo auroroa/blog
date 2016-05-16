@@ -1,0 +1,51 @@
+---
+layout: post
+title: "<<鲜活的数据>>"
+date: 2016-05-16 11:11:11 +0800
+categories: 读书笔记
+---
+
+> ### 一、数据可视化的根本目的：`用数据讲故事`。
+> > 讲好故事，总体来说需要留心两点：`模式`、`相互关系`。
+> >  
+> > 可视化设计流程其实就是一个对数据进行`编码`的过程，读者拿到设计结果而后进行`解码`。
+
+> ### 二、数据收集与格式化
+> > ####  数据收集
+  * 由他人提供
+  * 寻找数据源（搜索引擎、大学资源、专题性数据、自动搜索[python]等）
+> > #### 数据格式化
+  * 数据格式化（带分隔符文本、Json、XML)
+  * 格式化工具（Google Refine、Mr.Data Converter、Mr.People、Python等）
+
+> ### 三、可视化工具
+  * Excle
+  * Google Spreadsheets
+  * Many Eyes
+  * Tableau Software
+  * your.flowingdata
+  * Python
+  * PHP
+  * Flash and ActionScript
+  * `HTML、JavaScript、Css`
+  * R
+  * Adobe Illustrator
+  * Inkscape
+  * Google、Yahoo!、Microsoft地图
+  * ArcGIS
+  * Polymaps
+
+> ### 四、有关时间趋势的可视化
+> > ####  时间数据可分为离散时间、连续时间
+> > ####  离散型数据
+> > 
+  * 柱形图-横坐标、纵坐标、排列顺序、柱子颜色。
+  * 柱形图堆叠-时候数据存在子分类。
+  * 散点图-通常用来表现两个变量之间的关系。
+> > #### 延续性数据
+> > #####  用数据表现不断变化的现象，点点相连形成线。
+  * 折线图
+  * 阶梯图-体现数据节点间的突发性变化。
+  * 平滑与估算-LOESS(Locally Weighted Scatterplot Smoothing)局部甲醛散点平滑法。
+
+
