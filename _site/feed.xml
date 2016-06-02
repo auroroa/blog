@@ -6,9 +6,557 @@
 </description>
     <link>/blog/</link>
     <atom:link href="/blog/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 17 May 2016 09:28:56 +0800</pubDate>
-    <lastBuildDate>Tue, 17 May 2016 09:28:56 +0800</lastBuildDate>
+    <pubDate>Thu, 02 Jun 2016 15:17:38 +0800</pubDate>
+    <lastBuildDate>Thu, 02 Jun 2016 15:17:38 +0800</lastBuildDate>
     <generator>Jekyll v3.1.3</generator>
+    
+      <item>
+        <title>Swimlane</title>
+        <description>&lt;!--
+The MIT License (MIT)
+
+Copyright (c) 2013 bill@bunkat.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+--&gt;
+
+
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Swimlane using d3.js&lt;/title&gt;
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://mbostock.github.com/d3/d3.v2.js&quot;&gt;&lt;/script&gt;
+
+&lt;style&gt;
+.chart {
+	shape-rendering: crispEdges;
+}
+
+.mini text {
+	font: 9px sans-serif;	
+}
+
+.main text {
+	font: 12px sans-serif;	
+}
+
+.month text {
+	text-anchor: start;
+}
+
+.todayLine {
+	stroke: blue;
+	stroke-width: 1.5;
+}
+
+.axis line, .axis path {
+	stroke: black;
+}
+
+.miniItem {
+	stroke-width: 6;	
+}
+
+.future {
+	stroke: gray;
+	fill: #ddd;
+}
+
+.past {
+	stroke: green;
+	fill: lightgreen;
+}
+
+.brush .extent {
+	stroke: gray;
+	fill: blue;
+	fill-opacity: .165;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;script type=&quot;text/javascript&quot;&gt;
+(function() {
+
+    &quot;use strict&quot;;
+
+	var RandomData = function() {
+
+		var addToLane = function (chart, item) {
+		    var name = item.lane;
+
+		    if (!chart.lanes[name])
+		        chart.lanes[name] = [];
+
+		    var lane = chart.lanes[name];
+            console.log(lane);
+		    
+		    var sublane = 0;
+		    while(isOverlapping(item, lane[sublane]))
+		    	sublane++;
+
+		    if (!lane[sublane]) {
+		    	lane[sublane] = [];
+			}
+		    
+		    lane[sublane].push(item);	
+		};
+
+		var isOverlapping = function(item, lane) {
+			if (lane) {
+		        for (var i = 0; i &lt; lane.length; i++) {
+		            var t = lane[i];
+		            if (item.start &lt; t.end &amp;&amp; item.end &gt; t.start) {
+		                return true;                      
+		            }
+		        }
+			}
+		    return false;
+		};
+
+        var parseData = function (data) {
+            var i = 0, length = data.length, node;
+            chart = { lanes: {} };
+            
+            for (i; i &lt; length; i++) {
+                var item = data[i];
+
+                addToLane(chart, item);
+
+
+            }
+
+            return collapseLanes(chart);
+        };
+
+        var collapseLanes = function (chart) {
+        	var lanes = [], items = [], laneId = 0;
+        	var now = new Date();
+
+        	for (var laneName in chart.lanes) {
+        		var lane = chart.lanes[laneName];
+
+        		for (var i = 0; i &lt; lane.length; i++) {
+        			var subLane = lane[i];
+
+        			lanes.push({
+	        			id: laneId, 
+	        			label: i === 0 ? laneName : &#39;&#39;
+	        		});
+
+	        		for (var j = 0; j &lt; subLane.length; j++) {
+	        			var item = subLane[j];
+
+	        			items.push({
+	        				id: item.id,
+	        				lane: laneId,
+	        				start: item.start,
+	        				end: item.end,
+	        				class: item.end &gt; now ? &#39;future&#39; : &#39;past&#39;,
+	        				desc: item.desc
+	        			});
+	        		}
+
+	        		laneId++;
+        		}
+        	}
+
+        	return {lanes: lanes, items: items};
+        }
+
+		var randomNumber = function(min, max) {
+			return Math.floor(Math.random(0, 1) * (max - min)) + min;
+		};
+
+		var generateRandomWorkItems = function () {
+			var data = [];
+			var laneCount = randomNumber(5,7)
+			  , totalWorkItems = randomNumber(20,30)
+			  , startMonth = randomNumber(0,1)
+			  , startDay = randomNumber(1,28)
+			  , totalMonths = randomNumber(4,10);
+
+			for (var i = 0; i &lt; laneCount; i++) {
+				var dt = new Date(2012, startMonth, startDay);
+				for (var j = 0; j &lt; totalWorkItems; j++) {
+					
+					var dtS = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + randomNumber(1,5), randomNumber(8, 16), 0, 0);
+
+					var dateOffset =  randomNumber(0,7);
+					var dt = new Date(dtS.getFullYear(), dtS.getMonth(), dtS.getDate() + dateOffset, randomNumber(dateOffset === 0 ? dtS.getHours() + 2 : 8, 18), 0, 0);
+
+					var workItem = {
+						id: i * totalWorkItems + j,
+						name: &#39;work item &#39; + j,
+						lane: &#39;lane &#39; + i,
+						start: dtS,
+						end: dt,
+						desc: &#39;This is a description.&#39;
+					};
+
+					data.push(workItem);
+				}
+			}
+			return data;
+		};
+
+		return parseData(generateRandomWorkItems());
+	};
+
+    /**
+    * Allow library to be used within both the browser and node.js
+    */
+    var root = typeof exports !== &quot;undefined&quot; &amp;&amp; exports !== null ? exports : window;
+    root.randomData = RandomData;
+
+}).call(this);
+    
+    
+    //--------------randomData end ----------------
+
+var data = randomData()
+  , lanes = data.lanes
+  , items = data.items
+  , now = new Date();
+
+var margin = {top: 20, right: 15, bottom: 15, left: 60}
+  , width = 960 - margin.left - margin.right
+  , height = 500 - margin.top - margin.bottom
+  , miniHeight = lanes.length * 12 + 50
+  , mainHeight = height - miniHeight - 50;
+
+var x = d3.time.scale()
+	.domain([d3.time.sunday(d3.min(items, function(d) { return d.start; })),
+			 d3.max(items, function(d) { return d.end; })])
+	.range([0, width]);
+var x1 = d3.time.scale().range([0, width]);
+
+var ext = d3.extent(lanes, function(d) { return d.id; });
+var y1 = d3.scale.linear().domain([ext[0], ext[1] + 1]).range([0, mainHeight]);
+var y2 = d3.scale.linear().domain([ext[0], ext[1] + 1]).range([0, miniHeight]);
+
+var chart = d3.select(&#39;body&#39;)
+	.append(&#39;svg:svg&#39;)
+	.attr(&#39;width&#39;, width + margin.right + margin.left)
+	.attr(&#39;height&#39;, height + margin.top + margin.bottom)
+	.attr(&#39;class&#39;, &#39;chart&#39;);
+
+chart.append(&#39;defs&#39;).append(&#39;clipPath&#39;)
+	.attr(&#39;id&#39;, &#39;clip&#39;)
+	.append(&#39;rect&#39;)
+		.attr(&#39;width&#39;, width)
+		.attr(&#39;height&#39;, mainHeight);
+
+var main = chart.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(&#39; + margin.left + &#39;,&#39; + margin.top + &#39;)&#39;)
+	.attr(&#39;width&#39;, width)
+	.attr(&#39;height&#39;, mainHeight)
+	.attr(&#39;class&#39;, &#39;main&#39;);
+
+var mini = chart.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(&#39; + margin.left + &#39;,&#39; + (mainHeight + 60) + &#39;)&#39;)
+	.attr(&#39;width&#39;, width)
+	.attr(&#39;height&#39;, miniHeight)
+	.attr(&#39;class&#39;, &#39;mini&#39;);
+
+// draw the lanes for the main chart
+main.append(&#39;g&#39;).selectAll(&#39;.laneLines&#39;)
+	.data(lanes)
+	.enter().append(&#39;line&#39;)
+	.attr(&#39;x1&#39;, 0)
+	.attr(&#39;y1&#39;, function(d) { return d3.round(y1(d.id)) + 0.5; })
+	.attr(&#39;x2&#39;, width)
+	.attr(&#39;y2&#39;, function(d) { return d3.round(y1(d.id)) + 0.5; })
+	.attr(&#39;stroke&#39;, function(d) { return d.label === &#39;&#39; ? &#39;white&#39; : &#39;lightgray&#39; });
+
+main.append(&#39;g&#39;).selectAll(&#39;.laneText&#39;)
+	.data(lanes)
+	.enter().append(&#39;text&#39;)
+	.text(function(d) { return d.label; })
+	.attr(&#39;x&#39;, -10)
+	.attr(&#39;y&#39;, function(d) { return y1(d.id + .5); })
+	.attr(&#39;dy&#39;, &#39;0.5ex&#39;)
+	.attr(&#39;text-anchor&#39;, &#39;end&#39;)
+	.attr(&#39;class&#39;, &#39;laneText&#39;);
+
+// draw the lanes for the mini chart
+mini.append(&#39;g&#39;).selectAll(&#39;.laneLines&#39;)
+	.data(lanes)
+	.enter().append(&#39;line&#39;)
+	.attr(&#39;x1&#39;, 0)
+	.attr(&#39;y1&#39;, function(d) { return d3.round(y2(d.id)) + 0.5; })
+	.attr(&#39;x2&#39;, width)
+	.attr(&#39;y2&#39;, function(d) { return d3.round(y2(d.id)) + 0.5; })
+	.attr(&#39;stroke&#39;, function(d) { return d.label === &#39;&#39; ? &#39;white&#39; : &#39;lightgray&#39; });
+
+mini.append(&#39;g&#39;).selectAll(&#39;.laneText&#39;)
+	.data(lanes)
+	.enter().append(&#39;text&#39;)
+	.text(function(d) { return d.label; })
+	.attr(&#39;x&#39;, -10)
+	.attr(&#39;y&#39;, function(d) { return y2(d.id + .5); })
+	.attr(&#39;dy&#39;, &#39;0.5ex&#39;)
+	.attr(&#39;text-anchor&#39;, &#39;end&#39;)
+	.attr(&#39;class&#39;, &#39;laneText&#39;);
+
+// draw the x axis
+var xDateAxis = d3.svg.axis()
+	.scale(x)
+	.orient(&#39;bottom&#39;)
+	.ticks(d3.time.mondays, (x.domain()[1] - x.domain()[0]) &gt; 15552e6 ? 2 : 1)
+	.tickFormat(d3.time.format(&#39;%d&#39;))
+	.tickSize(6, 0, 0);
+
+var x1DateAxis = d3.svg.axis()
+	.scale(x1)
+	.orient(&#39;bottom&#39;)
+	.ticks(d3.time.days, 1)
+	.tickFormat(d3.time.format(&#39;%a %d&#39;))
+	.tickSize(6, 0, 0);
+
+var xMonthAxis = d3.svg.axis()
+	.scale(x)
+	.orient(&#39;top&#39;)
+	.ticks(d3.time.months, 1)
+	.tickFormat(d3.time.format(&#39;%b %Y&#39;))
+	.tickSize(15, 0, 0);
+
+var x1MonthAxis = d3.svg.axis()
+	.scale(x1)
+	.orient(&#39;top&#39;)
+	.ticks(d3.time.mondays, 1)
+	.tickFormat(d3.time.format(&#39;%b - Week %W&#39;))
+	.tickSize(15, 0, 0);
+
+main.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(0,&#39; + mainHeight + &#39;)&#39;)
+	.attr(&#39;class&#39;, &#39;main axis date&#39;)
+	.call(x1DateAxis);
+
+main.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(0,0.5)&#39;)
+	.attr(&#39;class&#39;, &#39;main axis month&#39;)
+	.call(x1MonthAxis)
+	.selectAll(&#39;text&#39;)
+		.attr(&#39;dx&#39;, 5)
+		.attr(&#39;dy&#39;, 12);
+
+mini.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(0,&#39; + miniHeight + &#39;)&#39;)
+	.attr(&#39;class&#39;, &#39;axis date&#39;)
+	.call(xDateAxis);
+
+mini.append(&#39;g&#39;)
+	.attr(&#39;transform&#39;, &#39;translate(0,0.5)&#39;)
+	.attr(&#39;class&#39;, &#39;axis month&#39;)
+	.call(xMonthAxis)
+	.selectAll(&#39;text&#39;)
+		.attr(&#39;dx&#39;, 5)
+		.attr(&#39;dy&#39;, 12);
+
+// draw a line representing today&#39;s date
+main.append(&#39;line&#39;)
+	.attr(&#39;y1&#39;, 0)
+	.attr(&#39;y2&#39;, mainHeight)
+	.attr(&#39;class&#39;, &#39;main todayLine&#39;)
+	.attr(&#39;clip-path&#39;, &#39;url(#clip)&#39;);
+	
+mini.append(&#39;line&#39;)
+	.attr(&#39;x1&#39;, x(now) + 0.5)
+	.attr(&#39;y1&#39;, 0)
+	.attr(&#39;x2&#39;, x(now) + 0.5)
+	.attr(&#39;y2&#39;, miniHeight)
+	.attr(&#39;class&#39;, &#39;todayLine&#39;);
+
+// draw the items
+var itemRects = main.append(&#39;g&#39;)
+	.attr(&#39;clip-path&#39;, &#39;url(#clip)&#39;);
+
+mini.append(&#39;g&#39;).selectAll(&#39;miniItems&#39;)
+	.data(getPaths(items))
+	.enter().append(&#39;path&#39;)
+	.attr(&#39;class&#39;, function(d) { return &#39;miniItem &#39; + d.class; })
+	.attr(&#39;d&#39;, function(d) { return d.path; });
+
+// invisible hit area to move around the selection window
+mini.append(&#39;rect&#39;)
+	.attr(&#39;pointer-events&#39;, &#39;painted&#39;)
+	.attr(&#39;width&#39;, width)
+	.attr(&#39;height&#39;, miniHeight)
+	.attr(&#39;visibility&#39;, &#39;hidden&#39;)
+	.on(&#39;mouseup&#39;, moveBrush);
+
+// draw the selection area
+var brush = d3.svg.brush()
+	.x(x)
+	.extent([d3.time.monday(now),d3.time.saturday.ceil(now)])
+	.on(&quot;brush&quot;, display);
+
+mini.append(&#39;g&#39;)
+	.attr(&#39;class&#39;, &#39;x brush&#39;)
+	.call(brush)
+	.selectAll(&#39;rect&#39;)
+		.attr(&#39;y&#39;, 1)
+		.attr(&#39;height&#39;, miniHeight - 1);
+
+mini.selectAll(&#39;rect.background&#39;).remove();
+display();
+
+function display () {
+
+	var rects, labels
+	  , minExtent = d3.time.day(brush.extent()[0])
+	  , maxExtent = d3.time.day(brush.extent()[1])
+	  , visItems = items.filter(function (d) { return d.start &lt; maxExtent &amp;&amp; d.end &gt; minExtent});
+
+	mini.select(&#39;.brush&#39;).call(brush.extent([minExtent, maxExtent]));		
+
+	x1.domain([minExtent, maxExtent]);
+
+	if ((maxExtent - minExtent) &gt; 1468800000) {
+		x1DateAxis.ticks(d3.time.mondays, 1).tickFormat(d3.time.format(&#39;%a %d&#39;))
+		x1MonthAxis.ticks(d3.time.mondays, 1).tickFormat(d3.time.format(&#39;%b - Week %W&#39;))		
+	}
+	else if ((maxExtent - minExtent) &gt; 172800000) {
+		x1DateAxis.ticks(d3.time.days, 1).tickFormat(d3.time.format(&#39;%a %d&#39;))
+		x1MonthAxis.ticks(d3.time.mondays, 1).tickFormat(d3.time.format(&#39;%b - Week %W&#39;))
+	}
+	else {
+		x1DateAxis.ticks(d3.time.hours, 4).tickFormat(d3.time.format(&#39;%I %p&#39;))
+		x1MonthAxis.ticks(d3.time.days, 1).tickFormat(d3.time.format(&#39;%b %e&#39;))
+	}
+
+
+	//x1Offset.range([0, x1(d3.time.day.ceil(now) - x1(d3.time.day.floor(now)))]);
+
+	// shift the today line
+	main.select(&#39;.main.todayLine&#39;)
+		.attr(&#39;x1&#39;, x1(now) + 0.5)
+		.attr(&#39;x2&#39;, x1(now) + 0.5);
+
+	// update the axis
+	main.select(&#39;.main.axis.date&#39;).call(x1DateAxis);
+	main.select(&#39;.main.axis.month&#39;).call(x1MonthAxis)
+		.selectAll(&#39;text&#39;)
+			.attr(&#39;dx&#39;, 5)
+			.attr(&#39;dy&#39;, 12);
+
+	// upate the item rects
+	rects = itemRects.selectAll(&#39;rect&#39;)
+		.data(visItems, function (d) { return d.id; })
+		.attr(&#39;x&#39;, function(d) { return x1(d.start); })
+		.attr(&#39;width&#39;, function(d) { return x1(d.end) - x1(d.start); });
+
+	rects.enter().append(&#39;rect&#39;)
+		.attr(&#39;x&#39;, function(d) { return x1(d.start); })
+		.attr(&#39;y&#39;, function(d) { return y1(d.lane) + .1 * y1(1) + 0.5; })
+		.attr(&#39;width&#39;, function(d) { return x1(d.end) - x1(d.start); })
+		.attr(&#39;height&#39;, function(d) { return .8 * y1(1); })
+		.attr(&#39;class&#39;, function(d) { return &#39;mainItem &#39; + d.class; });
+
+	rects.exit().remove();
+
+	// update the item labels
+	labels = itemRects.selectAll(&#39;text&#39;)
+		.data(visItems, function (d) { return d.id; })
+		.attr(&#39;x&#39;, function(d) { return x1(Math.max(d.start, minExtent)) + 2; });
+				
+	labels.enter().append(&#39;text&#39;)
+		.text(function (d) { return &#39;Item\n\n\n\n Id: &#39; + d.id; })
+		.attr(&#39;x&#39;, function(d) { return x1(Math.max(d.start, minExtent)) + 2; })
+		.attr(&#39;y&#39;, function(d) { return y1(d.lane) + .4 * y1(1) + 0.5; })
+		.attr(&#39;text-anchor&#39;, &#39;start&#39;)
+		.attr(&#39;class&#39;, &#39;itemLabel&#39;);
+
+	labels.exit().remove();
+}
+
+function moveBrush () {
+	var origin = d3.mouse(this)
+	  , point = x.invert(origin[0])
+	  , halfExtent = (brush.extent()[1].getTime() - brush.extent()[0].getTime()) / 2
+	  , start = new Date(point.getTime() - halfExtent)
+	  , end = new Date(point.getTime() + halfExtent);
+
+	brush.extent([start,end]);
+	display();
+}
+
+// generates a single path for each item class in the mini display
+// ugly - but draws mini 2x faster than append lines or line generator
+// is there a better way to do a bunch of lines as a single path with d3?
+function getPaths(items) {
+	var paths = {}, d, offset = .5 * y2(1) + 0.5, result = [];
+	for (var i = 0; i &lt; items.length; i++) {
+		d = items[i];
+		if (!paths[d.class]) paths[d.class] = &#39;&#39;;	
+		paths[d.class] += [&#39;M&#39;,x(d.start),(y2(d.lane) + offset),&#39;H&#39;,x(d.end)].join(&#39; &#39;);
+	}
+
+	for (var className in paths) {
+		result.push({class: className, path: paths[className]});
+	}
+
+	return result;
+}
+
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</description>
+        <pubDate>Thu, 02 Jun 2016 00:00:00 +0800</pubDate>
+        <link>/blog/d3/2016/06/02/swimlane/</link>
+        <guid isPermaLink="true">/blog/d3/2016/06/02/swimlane/</guid>
+        
+        
+        <category>d3</category>
+        
+      </item>
+    
+      <item>
+        <title>五月总结</title>
+        <description>&lt;blockquote&gt;
+  &lt;h2 id=&quot;section&quot;&gt;«鲜活的数据» 读后感&lt;/h2&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;整本书浅显易懂，每一章都是配有案例和源代码，一边看一边跟着练习还是很有意思的。打算过段时间我重读一遍结合每个案例都自己操作一遍。本书没有很多理论性的内容，大多是实操性的实例，从数据获取、数据处理、可视化工具的选择到各类型数据可视化（时间趋势、比例、关系、差异、空间关系等），从一个大的视角讲解了数据可视化的基本流程已经基本方法。读完之后，觉得数据可视化下手不再觉得困难，之前学过R语言，觉得没有实际意义，没有案例可做，现在结合本书操作起来也算是轻松许多。&lt;/p&gt;
+  &lt;/blockquote&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;h2 id=&quot;blog&quot;&gt;关于blog&lt;/h2&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;每次打算好要做到的事情，都因为各种理由放下。这次写blog，一放又是半个月，之间回了趟江西老家，别的不说了，希望坚持、坚持、再坚持。好不容易开了个头，千万不能再放弃了，马上30啦！&lt;/p&gt;
+  &lt;/blockquote&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;数据可视化最重要的部分其实是数据故事叙述和数据艺术化呈现。 –uber&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Tue, 31 May 2016 15:11:11 +0800</pubDate>
+        <link>/blog/%E6%80%BB%E7%BB%93/2016/05/31/%E4%BA%94%E6%9C%88%E6%80%BB%E7%BB%93/</link>
+        <guid isPermaLink="true">/blog/%E6%80%BB%E7%BB%93/2016/05/31/%E4%BA%94%E6%9C%88%E6%80%BB%E7%BB%93/</guid>
+        
+        
+        <category>总结</category>
+        
+      </item>
     
       <item>
         <title>&lt;&lt;鲜活的数据&gt;&gt;第一至四章</title>
